@@ -16,3 +16,5 @@
 Подойдет версия .NET Runtime 6.0.12.
 
 The .NET Runtime contains just the components needed to run a console app. Typically, you'd also install either the ASP.NET Core Runtime or .NET Desktop Runtime.
+
+### Data provided by [CoinGecko](https://www.coingecko.com/en/api)
