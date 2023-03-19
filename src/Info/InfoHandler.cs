@@ -236,7 +236,7 @@ namespace SmartCalcApp.Info
 
             var symbols = new List<PortfolioItem>();
             int index = 3;
-            decimal totalValue = 0m;
+            decimal totalResult = 0m;
 
             // read porfolio data
             while (true)
@@ -254,7 +254,7 @@ namespace SmartCalcApp.Info
                 var amount = ws.Cell(index, AmountCol).ReadAsDecimal();
 
                 // for bag
-                totalValue += ws.Cell(index, ValueCol).ReadAsDecimal();
+                totalResult += ws.Cell(index, ResultCol).ReadAsDecimal();
 
                 symbols.Add(new PortfolioItem
                 {
@@ -341,9 +341,9 @@ namespace SmartCalcApp.Info
             var usdc = bagWS.Cell(USDCRow, BagDatatCol).ReadAsDecimal();
             var ptv = bagWS.Cell(PTVRow, BagDatatCol).ReadAsDecimal();
 
-            usdc -= totalValue - ptv;
+            usdc += totalResult - ptv;
             bagWS.Cell(USDCRow, BagDatatCol).Value = usdc;
-            bagWS.Cell(PTVRow, BagDatatCol).Value = totalValue;
+            bagWS.Cell(PTVRow, BagDatatCol).Value = totalResult;
 
             symbols.Add(new PortfolioItem { Symbol = "USDC", Amount = usdc, CurrentPrice = 1, CurrentValue = usdc });
 

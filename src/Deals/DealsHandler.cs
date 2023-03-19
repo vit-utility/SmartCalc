@@ -124,6 +124,7 @@ namespace SmartCalcApp.Deals
 
                 dt.TotalAmount = 0;
                 dt.TotalValue = 0;
+
                 foreach (var deal in dt.Deals)
                 {
                     dt.TotalAmount += deal.Amount;
