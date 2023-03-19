@@ -6,7 +6,7 @@
 
 ## Как использовать
 * Ознакомиться с [гайдом](https://github.com/vit-utility/SmartCalc/blob/main/how%20to%20use.pdf)
-* [Скачать](https://github.com/vit-utility/SmartCalc/releases/tag/v1.0.0) и распаковать архив SmartCalc
+* [Скачать](https://github.com/vit-utility/SmartCalc/releases/tag/v1.0.1) и распаковать архив SmartCalc
 * Внести данные и вызвать нужный скрипт
 
 ## .NET Runtime
