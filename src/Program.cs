@@ -24,40 +24,29 @@ namespace SmartCalcApp
 
                 Context.DealsFilePath = Path.Combine(dir, "deals.xlsx");
                 Context.InfoFilePath = Path.Combine(dir, "info.xlsx");
-            }
-
-            //AddSymbol();
-            //AddSymbolData();
-            //UpdateInfo();
-            //return;
-
-            try
-            {
-                switch (args[0])
-                {
-                    case "SymbolAdded":
-                        AddSymbol();
-                        AddSymbolData();
-                        UpdateInfo();
-                        break;
-
-                    case "DealsAdded":
-                        AddSymbolData();
-                        UpdateInfo();
-                        break;
-
-                    case "UdpateData":
-                        UpdateInfo();
-                        break;
-
-                    case "UdpateBuyInfo":
-                        UdpateBuyInfo();
-                        break;
-                }
-            }
-            catch (InvalidOperationException)
-            {   
             }           
+
+            switch (args[0])
+            {
+                case "SymbolAdded":
+                    AddSymbol();
+                    AddSymbolData();
+                    UpdateInfo();
+                    break;
+
+                case "DealsAdded":
+                    AddSymbolData();
+                    UpdateInfo();
+                    break;
+
+                case "UdpateData":
+                    UpdateInfo();
+                    break;
+
+                case "UdpateBuyInfo":
+                    UdpateBuyInfo();
+                    break;
+            }
         }
 
         private static void AddSymbol()

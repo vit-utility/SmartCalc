@@ -62,7 +62,7 @@ namespace SmartCalcApp.Deals
 
                         if (price == 0m)
                         {
-                            break;
+                            continue;
                         }
 
                         var amount = item.Cell(i, AmountCol).ReadAsDecimal();
@@ -124,7 +124,6 @@ namespace SmartCalcApp.Deals
 
                 dt.TotalAmount = 0;
                 dt.TotalValue = 0;
-
                 foreach (var deal in dt.Deals)
                 {
                     dt.TotalAmount += deal.Amount;
