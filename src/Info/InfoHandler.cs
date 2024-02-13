@@ -27,6 +27,8 @@ namespace SmartCalcApp.Info
         public const string ValueCol = "M";
         public const string CurrentValueCol = "N";
         public const string ResultCol = "O";
+        public const string MarketcapCol = "Q";
+        public const string FDVCol = "R";
 
         public const string BagSymbolCol = "A";
         public const string BagCurrentPriceCol = "B";
@@ -272,12 +274,31 @@ namespace SmartCalcApp.Info
 
             var coinsIds = symbols.Select(x => x.CoinId).Where(y => !string.IsNullOrEmpty(y)).ToList();
 
-            var priceData = CoinGeckoAPIClient.GetPrice(coinsIds);
+            // var coinsIdsForMarketData = symbols.Where(x => x.Amount > 0).Select(x => x.CoinId).ToList();
+
+            // var priceData = CoinGeckoAPIClient.GetPrice(coinsIds);
+
+            var marketData = CoinGeckoAPIClient.GetCoinsMarketData(coinsIds);
 
             // calculate
             foreach (var item in symbols)
             {
-                item.CurrentPrice = priceData.GetCurrentPriceInUsdFor(item.CoinId);
+             //   item.CurrentPrice = priceData.GetCurrentPriceInUsdFor(item.CoinId);
+
+                var md = marketData.FirstOrDefault(x => x.Symbol.IsTheSame(item.Symbol));
+
+                if (md is null)
+                {
+                    item.Marketcap = "-";
+                    item.FDV = "-";
+                    item.CurrentPrice = 0m;
+                }
+                else
+                {
+                    item.Marketcap = md.MarketCap.HasValue ? md.MarketCap.Value.ToString("N0") : "-";
+                    item.FDV = md.FDV.HasValue ? md.FDV.Value.ToString("N0") : "-";
+                    item.CurrentPrice = md.CurrentPrice ?? 0m;
+                }
 
                 if (item.CurrentPrice == 0m)
                 {
@@ -333,6 +354,9 @@ namespace SmartCalcApp.Info
                 ws.Cell(item.Index, DiffAverageCol).Value = item.AverageDiff;
 
                 ws.Cell(item.Index, CurrentValueCol).Value = item.CurrentValue;
+
+                ws.Cell(item.Index, MarketcapCol).Value = item.Marketcap;
+                ws.Cell(item.Index, FDVCol).Value = item.FDV;
             }
 
             // bag section

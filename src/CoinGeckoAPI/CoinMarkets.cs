@@ -40,6 +40,9 @@ namespace SmartCalcApp.CoinGeckoAPI
         [JsonProperty("atl_change_percentage")]
         public decimal? AtlChangePercentage { get; set; }
 
+        [JsonProperty("fully_diluted_valuation")]
+        public decimal? FDV { get; set; }
+
         public override string ToString()
         {
             return $"{Name}[{Symbol}]";

@@ -12,19 +12,19 @@ namespace SmartCalcApp
         {
             var dir = ConfigurationManager.AppSettings["DataDirectory"].ToString();
 
-            if (dir.IsAbsolutePath())
-            {
-                Context.DealsFilePath = Path.Combine(dir, "deals.xlsx");
-                Context.InfoFilePath = Path.Combine(dir, "info.xlsx");
-            }
-            else
+            if (!dir.IsAbsolutePath())
             {
                 dir = Path.Combine(Environment.CurrentDirectory, dir);
                 dir = Path.GetFullPath(dir);
+            }
 
-                Context.DealsFilePath = Path.Combine(dir, "deals.xlsx");
-                Context.InfoFilePath = Path.Combine(dir, "info.xlsx");
-            }           
+            Context.DealsFilePath = Path.Combine(dir, "deals.xlsx");
+            Context.InfoFilePath = Path.Combine(dir, "info.xlsx");
+
+            var pathToApiKey = Path.Combine(dir, "api_key.txt");
+            var apiKey = File.ReadAllText(pathToApiKey);
+
+            CoinGeckoAPI.CoinGeckoAPIClient.SetApiKey(apiKey);
 
             switch (args[0])
             {

@@ -21,5 +21,7 @@ namespace SmartCalcApp.Info
         public decimal Amount { get; set; }
         public decimal Value { get; set; }
         public decimal CurrentValue { get; set; }
+        public string Marketcap { get; set; }
+        public string FDV { get; set; }
     }
 }
