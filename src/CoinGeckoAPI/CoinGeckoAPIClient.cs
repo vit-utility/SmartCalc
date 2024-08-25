@@ -11,7 +11,7 @@ namespace SmartCalcApp.CoinGeckoAPI
     {
         private static readonly string CoinsList = @"https://api.coingecko.com/api/v3/coins/list?x_cg_demo_api_key={0}";
         private static readonly string SimplePrice = @"https://api.coingecko.com/api/v3/simple/price?ids={0}&vs_currencies=usd&x_cg_demo_api_key={1}";
-        private static readonly string CoinsMarketData = @"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={0}&order=market_cap_desc&per_page=200&page=1&sparkline=false&x_cg_demo_api_key={1}";
+        private static readonly string CoinsMarketData = @"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={0}&x_cg_demo_api_key={1}";
 
         private static readonly HttpClient httpClient;
         private static string ApiKey;
