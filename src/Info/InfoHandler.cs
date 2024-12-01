@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using SmartCalcApp.CoinGeckoAPI;
 using System;
 using System.Collections.Generic;
@@ -283,7 +284,7 @@ namespace SmartCalcApp.Info
             // calculate
             foreach (var item in symbols)
             {
-             //   item.CurrentPrice = priceData.GetCurrentPriceInUsdFor(item.CoinId);
+                //   item.CurrentPrice = priceData.GetCurrentPriceInUsdFor(item.CoinId);
 
                 var md = marketData.FirstOrDefault(x => x.Symbol.IsTheSame(item.Symbol));
 
@@ -406,6 +407,7 @@ namespace SmartCalcApp.Info
             using var infoWB = new XLWorkbook(Context.InfoFilePath);
             var buyWS = infoWB.Worksheet(BuyInfoSheet);
             var buyItems = new List<BuyInfoItem>();
+            var symbolToBuyItemMap = new Dictionary<string, BuyInfoItem>(new StringIgnoreCaseEqualityComparer());
 
             #region Read Buy items 
 
@@ -419,7 +421,43 @@ namespace SmartCalcApp.Info
                     break;
                 }
 
-                buyItems.Add(new BuyInfoItem { Index = index, Symbol = symbol });
+                var item = new BuyInfoItem { Index = index, Symbol = symbol };
+                buyItems.Add(item);
+                symbolToBuyItemMap[symbol] = item;
+
+                ++index;
+            }
+
+            #endregion
+
+            #region Set prices from portfolio
+
+            var ws = infoWB.Worksheet(PortfolioSheet);
+            index = 3;
+
+            while (true)
+            {
+                var symbol = ws.Cell(index, SymbolCol).Value.ToString();
+
+                if (string.IsNullOrEmpty(symbol))
+                {
+                    break;
+                }
+
+                if (!symbolToBuyItemMap.ContainsKey(symbol))
+                {
+                    ++index;
+                    continue;
+                }
+
+                var lbp = ws.Cell(index, LastBuyPriceCol).ReadAsDecimal();
+                var lsp = ws.Cell(index, LastSellPriceCol).ReadAsDecimal();
+                var avg = ws.Cell(index, AveragePriceCol).ReadAsDecimal();
+
+                var bi = symbolToBuyItemMap[symbol];
+                bi.LastBuyPrice = lbp;
+                bi.LastSellPrice = lsp;
+                bi.AveragePrice = avg;
 
                 ++index;
             }
@@ -530,10 +568,82 @@ namespace SmartCalcApp.Info
                     continue;
                 }
 
-                buyWS.Cell(item.Index, BuyInfoItem.CurentPriceCol).Value = md.CurrentPrice ?? 1m;
-                buyWS.Cell(item.Index, BuyInfoItem.MarketcapCol).Value = md.MarketCap ?? 0m;
-                buyWS.Cell(item.Index, BuyInfoItem.SupplyCol).Value = md.CirculatingSupply ?? 0m;
-                buyWS.Cell(item.Index, BuyInfoItem.MaxSuplyCol).Value = md.MaxSupply ?? 0m;
+                var currentPrice = md.CurrentPrice ?? 1m;
+                buyWS.Cell(item.Index, BuyInfoItem.CurentPriceCol).Value = currentPrice;
+
+                if (item.LastBuyPrice == 0m)
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.LastBuyPriceCol).Value = "-";
+                    buyWS.Cell(item.Index, BuyInfoItem.DiffLastBuyPriceCol).Value = "-";
+                }
+                else
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.LastBuyPriceCol).Value = item.LastBuyPrice;
+
+                    var diff = Math.Round((currentPrice - item.LastBuyPrice) / item.LastBuyPrice, 3) * 100;
+
+                    buyWS.Cell(item.Index, BuyInfoItem.DiffLastBuyPriceCol).Value = $"{(diff > 0 ? "+" : "")}{diff:N1} %";
+                }
+
+                if (item.LastSellPrice == 0m)
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.LastSellPriceCol).Value = "-";
+                    buyWS.Cell(item.Index, BuyInfoItem.DiffLastSellPriceCol).Value = "-";
+                }
+                else
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.LastSellPriceCol).Value = item.LastSellPrice;
+
+                    var diff = Math.Round((currentPrice - item.LastSellPrice) / item.LastSellPrice, 3) * 100;
+
+                    buyWS.Cell(item.Index, BuyInfoItem.DiffLastSellPriceCol).Value = $"{(diff > 0 ? "+" : "")}{diff:N1} %";
+                }
+
+                if (item.AveragePrice == 0m)
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.AveragePriceCol).Value = "-";
+                    buyWS.Cell(item.Index, BuyInfoItem.DiffAveragePriceCol).Value = "-";
+                }
+                else
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.AveragePriceCol).Value = item.AveragePrice;
+
+                    var diff = Math.Round((currentPrice - item.AveragePrice) / item.AveragePrice, 3) * 100;
+
+                    buyWS.Cell(item.Index, BuyInfoItem.DiffAveragePriceCol).Value = $"{(diff > 0 ? "+" : "")}{diff:N1} %";
+                }
+
+                if (md.MarketCap.HasValue)
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.MarketcapCol).Value = md.MarketCap.Value;
+                }
+                else
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.MarketcapCol).Value = "-";
+                }
+
+                if (md.FDV.HasValue)
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.FDVCol).Value = md.FDV.Value;
+                }
+                else
+                {
+                    buyWS.Cell(item.Index, BuyInfoItem.FDVCol).Value = "-";
+                }
+
+                var supply = md.CirculatingSupply ?? 0m;
+                var totalSupply = md.TotalSupply ?? 0m;
+                var sp = "-";
+
+                if (totalSupply != 0)
+                {
+                    sp = $"{Math.Round(supply / totalSupply, 3) * 100:N1} %";
+                }
+
+                buyWS.Cell(item.Index, BuyInfoItem.SupplyCol).Value = supply;
+                buyWS.Cell(item.Index, BuyInfoItem.TotalSupplyCol).Value = totalSupply;
+                buyWS.Cell(item.Index, BuyInfoItem.SupplyPercentCol).Value = sp;
+
                 buyWS.Cell(item.Index, BuyInfoItem.ATHCol).Value = md.Ath ?? 0m;
                 buyWS.Cell(item.Index, BuyInfoItem.ATHPercentCol).Value = md.AthChangePercentage ?? 0m;
                 buyWS.Cell(item.Index, BuyInfoItem.ATLCol).Value = md.Atl ?? 0m;
